@@ -32,7 +32,7 @@ set(HTTP_SOURCES
 	${IMGUI_DIR}/http/ip_helper.cpp
 )
 
-add_executable(JXUST ${SOURCES} ${IMGUI_SOURCES} ${HTTP_SOURCES})
+add_executable(JXUST ${SOURCES} ${IMGUI_SOURCES} ${HTTP_SOURCES} font/app.rc)
 
 target_include_directories(JXUST PRIVATE
 	${IMGUI_DIR}/imgui
