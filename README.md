@@ -18,7 +18,7 @@
 ### 1. 下载
 
 您可以从本项目的 [Releases](https://github.com/TokiHanako/JXUST_Auth/releases) 页面下载最新的已编译版本。
-国内快速下载 [蓝奏云](https://wwoz.lanzoul.com/iLrG736e99he)
+国内快速下载 [蓝奏云](https://wwoz.lanzoul.com/icNNs36ec6qd)
 
 ### 2. 运行
 

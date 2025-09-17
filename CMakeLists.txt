@@ -41,6 +41,7 @@ target_include_directories(JXUST PRIVATE
 target_link_options(JXUST PRIVATE
         -static-libgcc      # 静态 libgcc
         -static-libstdc++   # 静态 libstdc++
+		-static
         -Wl,/SUBSYSTEM:WINDOWS
         -Wl,/ENTRY:mainCRTStartup
     )
