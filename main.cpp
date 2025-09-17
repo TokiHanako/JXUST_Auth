@@ -10,6 +10,7 @@
 #include "http/httplib.h"
 #include "http/ip_helper.h"
 #include "ImGuiNotify.hpp"
+#include <shellapi.h>
 using namespace lib_net;
 using namespace std;
 namespace fs = std::filesystem;
@@ -27,6 +28,11 @@ static constexpr unsigned char font_data[] = {
 };
 static std::optional<ImGuiToast> g_pendingToast; // 延迟通知
 static std::string g_iniPath;   // 全局绝对路径
+#define WM_TRAY (WM_USER + 100)   // 托盘消息
+
+static NOTIFYICONDATAW g_nid = {}; // 托盘图标结构
+static HMENU g_hTrayMenu = nullptr; // 右键菜单（可选）
+static bool  g_inTray = false;      // 当前是否已最小化到托盘
 // 数据持久化
 enum Operator
 {
@@ -57,6 +63,26 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void Setup();
 void layout_ui();
+static void CreateTrayIcon(HWND hwnd)
+{
+    g_nid.cbSize = sizeof(NOTIFYICONDATAW);
+    g_nid.hWnd = hwnd;
+    g_nid.uID = 1;
+    g_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    g_nid.uCallbackMessage = WM_TRAY;
+    g_nid.hIcon = (HICON)LoadImageA(nullptr, IDI_APPLICATION,
+                                IMAGE_ICON, 0, 0, LR_SHARED);
+    wcscpy_s(g_nid.szTip, L"校园网认证");
+
+    Shell_NotifyIconW(NIM_ADD, &g_nid);
+
+    // 可选：右键菜单
+    g_hTrayMenu = CreatePopupMenu();
+    AppendMenuW(g_hTrayMenu, MF_STRING, 1001, L"显示主窗口");
+    AppendMenuW(g_hTrayMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenuW(g_hTrayMenu, MF_STRING, 1002, L"退出");
+}
+
 static void InitIniPath()
 {
     wchar_t exePathW[MAX_PATH];
@@ -201,7 +227,7 @@ int main()
     // Show the window
     ::ShowWindow(hwnd, SW_HIDE);
     ::UpdateWindow(hwnd);
-
+    CreateTrayIcon(hwnd);
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -588,15 +614,40 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
     case WM_SIZE:
         if (wParam == SIZE_MINIMIZED)
+        {
+            // 最小化 → 托盘
+            ShowWindow(hWnd, SW_HIDE);
+            g_inTray = true;
             return 0;
-        g_ResizeWidth = (UINT)LOWORD(lParam); // Queue resize
-        g_ResizeHeight = (UINT)HIWORD(lParam);
-        return 0;
-    case WM_SYSCOMMAND:
-        if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
-            return 0;
+        }
         break;
+
+    case WM_TRAY:
+        switch (lParam)
+        {
+        case WM_LBUTTONUP:   // 左键单击：显示窗口
+            ShowWindow(hWnd, SW_SHOW);
+            SetForegroundWindow(hWnd);
+            g_inTray = false;
+            break;
+
+        case WM_RBUTTONUP:   // 右键：弹出菜单
+            {
+                POINT pt;
+                GetCursorPos(&pt);
+                SetForegroundWindow(hWnd); // 必须调用，否则菜单不消失
+                UINT cmd = TrackPopupMenu(g_hTrayMenu,
+                                          TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD,
+                                          pt.x, pt.y, 0, hWnd, nullptr);
+                if (cmd == 1001) { ShowWindow(hWnd, SW_SHOW); g_inTray = false; }
+                if (cmd == 1002) { PostQuitMessage(0); }
+            }
+            break;
+        }
+        break;
+
     case WM_DESTROY:
+        Shell_NotifyIconW(NIM_DELETE, &g_nid); // 删除托盘图标
         ::PostQuitMessage(0);
         return 0;
     }

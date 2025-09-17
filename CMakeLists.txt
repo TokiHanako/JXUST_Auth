@@ -39,6 +39,8 @@ target_include_directories(JXUST PRIVATE
 	${IMGUI_DIR}/http
 )
 target_link_options(JXUST PRIVATE
+        -static-libgcc      # 静态 libgcc
+        -static-libstdc++   # 静态 libstdc++
         -Wl,/SUBSYSTEM:WINDOWS
         -Wl,/ENTRY:mainCRTStartup
     )

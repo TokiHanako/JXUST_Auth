@@ -7,10 +7,10 @@
         "${workspaceFolder}",
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
-      "compilerPath": "C:/Program Files/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.39.33519/bin/Hostx64/x64/cl.exe",
+      "compilerPath": "C:\\Users\\TokiHanako\\AppData\\Local\\Android\\Sdk\\ndk\\29.0.13599879\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe",
       "cStandard": "c23",
       "cppStandard": "c++17",
-      "intelliSenseMode": "windows-msvc-x64"
+      "intelliSenseMode": "windows-clang-x64"
     }
   ],
   "version": 4
